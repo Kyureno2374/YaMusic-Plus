@@ -29,25 +29,9 @@ export class ConfigPatcher {
     pkg.appConfig.enableUpdateByProbability = false;
     pkg.appConfig.systemDefaultLanguage = 'ru';
 
-    pkg.build = {
-      appId: 'ru.yandex.desktop.music.plus',
-      productName: 'Яндекс Музыка',
-      win: {
-        icon: 'assets/icon.ico',
-      },
-      mac: {
-        icon: 'assets/icon.ico',
-      },
-      linux: {
-        icon: 'assets/icon.png',
-      },
-      extraResources: [
-        {
-          from: 'assets/',
-          to: 'assets/',
-          filter: ['**/*'],
-        },
-      ],
+    pkg.scripts = {
+      start: 'electron .',
+      dev: 'electron . --dev'
     };
 
     this.mergeDependencies(pkg, rootPkg);

@@ -54,8 +54,11 @@ export class BuildProcessor {
     console.log(`[7/8] Инжекция кода мода`);
     this.injectModCode(buildModdedDir);
 
-    console.log(`[8/8] Удаление splash screen`);
+    console.log(`[8/9] Удаление splash screen`);
     this.removeSplashScreen(buildModdedDir);
+
+    console.log(`[9/9] Установка зависимостей`);
+    await this.installDependencies(buildModdedDir);
 
     console.log(`\n✅ Патчинг завершен: ${buildModdedDir}`);
   }
@@ -142,6 +145,44 @@ export class BuildProcessor {
   private removeSplashScreen(buildModdedDir: string): void {
     const splashScreenPath = path.join(buildModdedDir, 'app', 'media', 'splash_screen');
     this.fileManager.removeDirectory(splashScreenPath);
+  }
+
+  private async installDependencies(buildDir: string): Promise<void> {
+    try {
+      console.log('📦 Установка зависимостей...');
+      await this.runCommand('npm install', buildDir);
+      
+      console.log('✅ Зависимости установлены!');
+      console.log(`\n🎯 Готово! Запустите: cd "${buildDir}" && npm start`);
+    } catch (error) {
+      console.error('❌ Ошибка установки:', (error as Error).message);
+      throw error;
+    }
+  }
+
+  private async runCommand(command: string, cwd: string): Promise<void> {
+    const { spawn } = await import('child_process');
+    
+    return new Promise((resolve, reject) => {
+      const [cmd, ...args] = command.split(' ');
+      const process = spawn(cmd, args, { 
+        cwd, 
+        stdio: 'inherit',
+        shell: true 
+      });
+
+      process.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Команда завершилась с кодом ${code}`));
+        }
+      });
+
+      process.on('error', (error) => {
+        reject(error);
+      });
+    });
   }
 
   private findAlternativePaths(buildModdedDir: string, fileName: string): void {
